@@ -9,7 +9,7 @@
       schema: document.getElementById("schema").value,
       trafficData: document.getElementById("traffic-data").value,
     });
-		console.log(res);
+		console.log(JSON.stringify(res));
   };
 
   const createBody = (object) => {
@@ -40,7 +40,8 @@
 <div>
 <form method="post" id="form" name="form">
   <p><label for="schema">Input model schema data:</label></p>
-  <textarea id="schema" name="schema" rows="4" cols="50">[{
+  <textarea id="schema" name="schema" rows="4" cols="50">
+[{
 	"path": "/users/info",
 	"method": "GET",
 	"query_params": [
@@ -194,10 +195,12 @@
 		}
 	]
 }
-]</textarea>
+]
+	</textarea>
   <br/>
   <p><label for="traffic-data">Input traffic data:</label></p>
-  <textarea id="traffic-data" name="traffic-data" rows="4" cols="50">[{
+  <textarea id="traffic-data" name="traffic-data" rows="4" cols="50">
+    [{
 	"path": "/users/info",
 	"method": "GET",
 	"query_params": [
@@ -668,7 +671,8 @@
 		}
 	]
 }
-]</textarea>
+]
+  </textarea>
   <br/>
   <a href="#" id="submit-button" onclick="submit()">Click me</a>
 </form>

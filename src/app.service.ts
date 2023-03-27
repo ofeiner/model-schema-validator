@@ -11,52 +11,53 @@ export class AppService {
   ) {
     const results = new Array<object>();
     trafficData.map((entry) => {
-      const matchedSchema = modelSchemata.filter(
+      const matchedSchema = modelSchemata.find(
         (schema) =>
           schema['path'] === entry['path'] &&
           schema['method'] === entry['method'],
       );
-      let isValid = false;
-      if (matchedSchema && matchedSchema.length > 0) {
-        isValid = this.validateSingleTrafficDatapoint(entry, matchedSchema[0]);
-      }
+      let isValid: boolean;
+      if (matchedSchema) {
+        isValid = this.validateSingleTrafficDatapoint(entry, matchedSchema);
+      } else isValid = true; // TODO return a notification message instead
       results.push({
         entry: entry,
+        matchedSchema: matchedSchema,
         isValid: isValid,
       });
     });
     return results;
   }
   private validateSingleTrafficDatapoint(data: object, schema: object) {
-    delete schema['path'];
-    delete schema['method'];
-    delete data['path'];
-    delete data['method'];
+    let res = true;
     const schemaKeys = Object.keys(schema);
-    schemaKeys.map((schemaKey) => {
-      if (Object.keys(data).includes(schemaKey)) {
-        if (schema[schemaKey].length != 0) {
-          return this.validateSingleFeature(data[schemaKey], schema[schemaKey]);
+    schemaKeys
+      .filter((key) => key != 'path' && key != 'method')
+      .map((schemaKey) => {
+        if (Object.keys(data).includes(schemaKey)) {
+          if (schema[schemaKey].length != 0)
+            res =
+              res &&
+              this.validateSingleFeature(data[schemaKey], schema[schemaKey]);
         }
-      } else return false;
-    });
-    return true;
+      });
+    return res;
   }
 
   private validateSingleFeature(datum: Array<object>, feature: Array<object>) {
-    feature.map((subFeature) => {
-      if (subFeature['required'] == true) {
+    if (!datum) return false;
+    let res = true;
+    feature
+      // .filter((sub) => sub['required'] == true)
+      .map((subFeature) => {
         const subDatum = datum.find(
           (sub) => sub['name'] === subFeature['name'],
         );
-        if (
-          subDatum === undefined ||
-          !this.validateFeatureParticle(subDatum, subFeature)
-        )
-          return false;
-      }
-    });
-    return true;
+        if (subDatum)
+          res = res && this.validateFeatureParticle(subDatum, subFeature);
+        else if (subFeature['required'] == true) res = false;
+      });
+    return res;
   }
 
   private validateFeatureParticle(subDatum: object, subFeature: object) {
